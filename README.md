@@ -8,4 +8,4 @@ good for the second sprint so we can have a little of a head start. Im excited t
 
 Hamsa Farah: During this iteration, I did not get started as early as I should have; I began my portion of the work only about two days before the deadline. This made it harder to coordinate with my teammates, and I ended up completing most of my work on Sunday. I did well, all things considered, but will do a better job of communicating earlier, managing my time, and coordinating a more consistent schedule for the next iteration.  I'm excited to see how our project evolves!
 
-Khalil:
+Khalil: This first sprint felt a little rushed for me since I got access late and did most of my work on the last day. Even so, I'm happy with what I got done. I worked on the part of the app that warns the operator when something goes wrong with a drone, and I helped put our submission together. Next sprint I want to start earlier, stay in better contact with the team, and not leave things to the end. I'm excited to see everyone's pieces start working together!
