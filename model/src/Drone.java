@@ -18,8 +18,8 @@ public class Drone {
      * @param theOrientation
      * @param theVelocity
      */
-    public void drone(double theLatitude, double theLongitude, double theAltitude, int theDroneId, double theBattery,
-                      double theOrientation, double theVelocity) {
+    public Drone(double theLatitude, double theLongitude, double theAltitude, int theDroneId, double theBattery,
+                 double theOrientation, double theVelocity) {
         this.myLatitude = theLatitude;
         this.myLongitude = theLongitude;
         this.myAltitude = theAltitude;

@@ -7,6 +7,7 @@ public class DroneMonitorApp {
     DroneMonitorApp(MonitorDashboard theDashboard,  MonitorController theController) {
        myDashboard = theDashboard;
        myController = theController;
+       myDashboard.setController(myController);
     }
     public static void main(String[] args) {
     DroneMonitorApp theApp = new DroneMonitorApp(new MonitorDashboard(), new MonitorController());
