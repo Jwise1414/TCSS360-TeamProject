@@ -57,20 +57,6 @@ public class Drone {
     }
 
     /**
-     * Updates all telemetry values at once (called by TelemetryGenerator
-     * every update interval).
-     */
-    public void updateTelemetry(double theLatitude, double theLongitude, double theAltitude,
-                                double theBattery, double theOrientation, double theVelocity) {
-        UpdateLatitude(theLatitude);
-        UpdateLongitude(theLongitude);
-        UpdateAltitude(theAltitude);
-        UpdateBattery(theBattery);
-        UpdateOrientation(theOrientation);
-        UpdateVelocity(theVelocity);
-    }
-
-    /**
      * Getter methods
      */
     public double getLatitude() {
