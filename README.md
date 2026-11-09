@@ -8,5 +8,6 @@ hopefully the second iteration is make to the liking, I feel it has a lot more c
 Hamsa Farah Week 2: Same as Jason, I wasn't sure where to start, so I started with the DB setup. I researched SQLite integration with Java, worked on the initial database setup, and created the anomaly repository to handle storing and retrieving anomaly records. I also started working on how it would integrate
 with the existing application.
 
+Khalil Week 2:
 
 
