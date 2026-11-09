@@ -18,8 +18,8 @@ public class Drone {
      * @param theOrientation
      * @param theVelocity
      */
-    public void drone(double theLatitude, double theLongitude, double theAltitude, int theDroneId, double theBattery,
-                      double theOrientation, double theVelocity) {
+    public Drone(double theLatitude, double theLongitude, double theAltitude, int theDroneId, double theBattery,
+                 double theOrientation, double theVelocity) {
         this.myLatitude = theLatitude;
         this.myLongitude = theLongitude;
         this.myAltitude = theAltitude;
@@ -54,6 +54,20 @@ public class Drone {
     }
     private void UpdateSimState(boolean theSimState) {
         this.mySimState = theSimState;
+    }
+
+    /**
+     * Updates all telemetry values at once (called by TelemetryGenerator
+     * every update interval).
+     */
+    public void updateTelemetry(double theLatitude, double theLongitude, double theAltitude,
+                                double theBattery, double theOrientation, double theVelocity) {
+        UpdateLatitude(theLatitude);
+        UpdateLongitude(theLongitude);
+        UpdateAltitude(theAltitude);
+        UpdateBattery(theBattery);
+        UpdateOrientation(theOrientation);
+        UpdateVelocity(theVelocity);
     }
 
     /**
