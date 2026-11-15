@@ -23,7 +23,6 @@ public class MonitorDashboard {
     private MonitorController myController;
 
     MonitorDashboard() {
-        // use the normal Windows/Mac look for menus, dialogs and the file chooser
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -138,13 +137,107 @@ public class MonitorDashboard {
 
         menuBar.add(menu);
 
+        //filter logic
+        JMenu filterMenu = new JMenu("Filter");
+
+        JMenuItem byID = getJMenuItem();
+        filterMenu.add(byID);
+                filterMenu.addSeparator();
+
+                JMenuItem lowBattery = new JMenuItem("LOW_BATTERY");
+                filterMenu.add(lowBattery);
+                lowBattery.addActionListener(e -> showAnomaliesOfType("LOW_BATTERY"));
+
+                JMenuItem highAltitude = new JMenuItem("ALTITUDE");
+                filterMenu.add(highAltitude);
+                highAltitude.addActionListener(e -> showAnomaliesOfType("ALTITUDE"));
+
+                JMenuItem sharpTurn = new JMenuItem("SHARP_TURN");
+                filterMenu.add(sharpTurn);
+                sharpTurn.addActionListener(e -> showAnomaliesOfType("SHARP_TURN"));
+
+                JMenuItem gpsJump = new JMenuItem("GPS_JUMP");
+                filterMenu.add(gpsJump);
+                gpsJump.addActionListener(e -> showAnomaliesOfType("GPS_JUMP"));
+
+
+
+        menuBar.add(filterMenu);
+
+        //help logic
+        HelpView help = new HelpView(frame);
+        JMenu helpMenu = new JMenu("Help");
+
+        JMenuItem instructions = new JMenuItem("How to Use");
+        instructions.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
+        instructions.addActionListener(e -> help.showInstructions());
+        helpMenu.add(instructions);
+
+        JMenuItem about = new JMenuItem("About");
+        about.addActionListener(e -> help.showAbout());
+        helpMenu.add(about);
+
+        menuBar.add(helpMenu);
+
         frame.setJMenuBar(menuBar);
         frame.revalidate();
         frame.repaint();
 
     }
 
-    // shows long text in a dialog that scrolls instead of growing off the screen
+    private JMenuItem getJMenuItem() {
+        JMenuItem byID = new JMenuItem("By Drone ID...");
+        byID.addActionListener(ev -> {
+            String input = JOptionPane.showInputDialog(frame, "Enter a drone ID:",
+                    "Filter by ID", JOptionPane.QUESTION_MESSAGE);
+            if (input == null || input.isBlank()) {
+                return;
+            }
+            try {
+                int id = Integer.parseInt(input.trim());
+                showAnomaliesOfID(id);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(frame, "\"" + input + "\" is not a valid ID.",
+                        "Filter by ID", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        return byID;
+    }
+
+    // Organizes the Anomolies based off type
+    private void showAnomaliesOfType(String theType) {
+        StringBuilder text = new StringBuilder();
+        int count = 0;
+        for (AnomalyRecord r : myController.getAnomalies()) {
+            if (r.getType().equals(theType)) {
+                text.append(TIME_FORMAT.format(r.getTimestamp()))
+                        .append("  Drone #").append(r.getDroneID())
+                        .append("  ").append(r.getDetails())
+                        .append("\n");
+                count++;
+            }
+        }
+        showScrollingMessage(theType + " (" + count + ")", text.toString(),
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+    // Organizes the Anomolies based off ID
+    private void showAnomaliesOfID(int theID) {
+        StringBuilder text = new StringBuilder();
+        int count = 0;
+        for (AnomalyRecord r : myController.getAnomalies()) {
+            if (r.getDroneID() == theID) {
+                text.append(TIME_FORMAT.format(r.getTimestamp()))
+                        .append("  ").append(r.getType())
+                        .append("  ").append(r.getDetails())
+                        .append("\n");
+                count++;
+            }
+        }
+        showScrollingMessage("Drone Id: " + theID + "  Anomoly Count:" +" "+ count , text.toString(),
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // shows long text in a dialog
     private void showScrollingMessage(String theTitle, String theText, int theType) {
         JTextArea area = new JTextArea(theText);
         area.setEditable(false);

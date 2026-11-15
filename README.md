@@ -10,4 +10,7 @@ with the existing application.
 
 Khalil Week 2: I fell behind this sprint and didn’t get my part done on time, so Jason and Hamsa carried most of the work. After the deadline I finished TCS-16 and TCS-17, connecting my anomaly detector to Hamsa’s database so detected anomalies get saved, and added tests for it. Next sprint I’m going to start early and stay in contact with the team throughout the week.
 
+Jason Wise Week 3: this sprint went well, after making the help view I realized how inefficient my monitordashboard was and how I could make it easier to read and better to maintain
+For the help view I went more based off the UML which make the class look a lot cleaner and super easy to understand which I will now use this type of format when working with GUI in the future
+The filter gave me trouble as I havnt done anything like that before but I was able to figure it out.
 
