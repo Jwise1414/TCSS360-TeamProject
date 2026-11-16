@@ -10,4 +10,4 @@ with the existing application.
 
 Khalil Week 2: I fell behind this sprint and didn’t get my part done on time, so Jason and Hamsa carried most of the work. After the deadline I finished TCS-16 and TCS-17, connecting my anomaly detector to Hamsa’s database so detected anomalies get saved, and added tests for it. Next sprint I’m going to start early and stay in contact with the team throughout the week.
 
-
+Khalil Week 3: I completed TCS-18 Search By Type. I merged Jason's GUI branch into my branch and resolved the conflicts, then added search by type to the service, controller and dashboard menu with a type picker, plus 3 new JUnit tests (8 passing). While testing I found the SQLite JDBC driver was missing from the project and added it so the database now initializes correctly.
