@@ -3,11 +3,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * TCS-16 / TCS-17: Connects anomaly detection to the SQLite database.
- *
- * <p>Each update interval, the service runs the AnomalyDetector on every
- * drone and saves each new anomaly through AnomalyRepository so it is kept
- * in drone-monitor.db. The returned list can be shown as alerts in the GUI.</p>
+ * TCS-16 / TCS-17 / TCS-18: Connects anomaly detection to the SQLite database
+ * and lets the GUI search saved anomalies.
  *
  * @author Khalil Ahmednoor
  */
@@ -16,12 +13,6 @@ public class AnomalyService {
     private final AnomalyDetector myDetector;
     private final AnomalyRepository myRepository;
 
-    /**
-     * Creates the service.
-     *
-     * @param theDetector   the detector to run on each drone
-     * @param theRepository where detected anomalies are saved
-     */
     public AnomalyService(final AnomalyDetector theDetector,
                           final AnomalyRepository theRepository) {
         myDetector = Objects.requireNonNull(theDetector);
@@ -30,9 +21,6 @@ public class AnomalyService {
 
     /**
      * Checks every drone, saves any new anomalies, and returns them.
-     *
-     * @param theDrones the drones to check this interval
-     * @return new anomalies found (empty list if none)
      */
     public List<AnomalyRecord> processUpdate(final List<Drone> theDrones) {
         final List<AnomalyRecord> found = new ArrayList<>();
@@ -47,10 +35,18 @@ public class AnomalyService {
 
     /**
      * Returns every saved anomaly, newest first.
-     *
-     * @return all anomaly records in the database
      */
     public List<AnomalyRecord> getHistory() {
         return myRepository.getAll();
+    }
+
+    /**
+     * TCS-18: Returns saved anomalies of one type, newest first.
+     *
+     * @param theType the anomaly type to search for
+     * @return matching anomaly records (empty list if none)
+     */
+    public List<AnomalyRecord> getByType(final AnomalyType theType) {
+        return myRepository.getByType(Objects.requireNonNull(theType).name());
     }
 }

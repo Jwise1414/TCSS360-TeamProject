@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * TCS-16: Checks each drone's telemetry against the detection rules in
@@ -119,6 +120,21 @@ public class AnomalyDetector {
     }
 
     /**
+     * Returns the conditions active right now, e.g. "Drone #3: LOW_BATTERY".
+     *
+     * @return a new sorted set describing each active condition
+     */
+    public Set<String> getActiveConditions() {
+        final Set<String> result = new TreeSet<>();
+        for (final Map.Entry<Integer, Set<AnomalyType>> entry : myActiveConditions.entrySet()) {
+            for (final AnomalyType type : entry.getValue()) {
+                result.add("Drone #" + entry.getKey() + ": " + type.name());
+            }
+        }
+        return result;
+    }
+
+    /**
      * Records an anomaly only when its condition becomes active, and clears it
      * when the condition ends, so a continuing condition is recorded once.
      */
@@ -140,10 +156,6 @@ public class AnomalyDetector {
     /**
      * Returns the smallest angle between two headings, handling the 0/360
      * boundary. For example, 359 to 1 is a 2 degree change.
-     *
-     * @param theFrom starting heading in degrees
-     * @param theTo   ending heading in degrees
-     * @return change in degrees, from 0 to 180
      */
     public static double headingChange(final double theFrom, final double theTo) {
         final double diff = Math.abs(theTo - theFrom) % 360.0;

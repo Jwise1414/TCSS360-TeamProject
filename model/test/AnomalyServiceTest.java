@@ -1,4 +1,5 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -7,9 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for TCS-16 (AnomalyDetector on Drone) and TCS-17 (AnomalyService
- * saving through AnomalyRepository). Uses an in-memory repository so the
- * tests don't need the SQLite file.
+ * Tests for TCS-16 (AnomalyDetector), TCS-17 (saving through AnomalyRepository)
+ * and TCS-18 (search by type). Uses an in-memory repository so the tests
+ * don't need the SQLite file.
  *
  * @author Khalil Ahmednoor
  */
@@ -31,6 +32,17 @@ class AnomalyServiceTest {
         @Override
         public List<AnomalyRecord> getAll() {
             return new ArrayList<>(mySaved);
+        }
+
+        @Override
+        public List<AnomalyRecord> getByType(final String theType) {
+            final List<AnomalyRecord> result = new ArrayList<>();
+            for (final AnomalyRecord r : mySaved) {
+                if (r.getType().equals(theType)) {
+                    result.add(r);
+                }
+            }
+            return result;
         }
     }
 
@@ -87,5 +99,29 @@ class AnomalyServiceTest {
     @Test
     void headingChangeWrapsAround360() {
         assertEquals(2.0, AnomalyDetector.headingChange(359, 1), 1e-9);
+    }
+
+    @Test
+    void searchByTypeReturnsOnlyMatchingType() {
+        final Drone d = drone(47.60, -122.33, 100, 10, 10);   // low battery
+        myService.processUpdate(List.of(d));
+        d.updateTelemetry(47.70, -122.33, 50, 9, 100, 10);    // drop, turn, GPS jump
+        myService.processUpdate(List.of(d));
+
+        final List<AnomalyRecord> lowBattery = myService.getByType(AnomalyType.LOW_BATTERY);
+        assertEquals(1, lowBattery.size());
+        assertEquals("LOW_BATTERY", lowBattery.get(0).getType());
+        assertEquals(1, myService.getByType(AnomalyType.SHARP_TURN).size());
+    }
+
+    @Test
+    void searchByTypeWithNoMatchesIsEmpty() {
+        myService.processUpdate(List.of(drone(47.6, -122.3, 100, 10, 90)));
+        assertTrue(myService.getByType(AnomalyType.GPS_LOCATION_JUMP).isEmpty());
+    }
+
+    @Test
+    void searchByNullTypeThrows() {
+        assertThrows(NullPointerException.class, () -> myService.getByType(null));
     }
 }
