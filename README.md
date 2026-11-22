@@ -13,6 +13,8 @@ Khalil Week 2: I fell behind this sprint and didn’t get my part done on time, 
 Khalil Week 3: I completed TCS-18 Search By Type. I merged Jason's GUI branch into my branch and resolved the conflicts, then added search by type to the service, controller and dashboard menu with a type picker, plus 3 new JUnit tests (8 passing). While testing I found the SQLite JDBC driver was missing from the project and added it so the database now initializes correctly.
 
 Jason Wise Week 3: this sprint went well, after making the help view I realized how inefficient my monitordashboard was and how I could make it easier to read and better to maintain
-For the help view I went more based off the UML which make the class look a lot cleaner and super easy to understand which I will now use this type of format when working with GUI in the future
-The filter gave me trouble as I havnt done anything like that before but I was able to figure it out.
+For the help view I went more based off the UML which make the class look a lot cleaner and super easy to understand which I will now use this type of format when working with GUI in the future The filter gave me trouble as I havnt done anything like that before but I was able to figure it out.
+
+Jason Wise  Week 4: this week has made me regret a lot. From now on I will NOT WAIT UNTIL 4 INTERATIONS TO MERGE ALL OUR CODE. It was an absolute mess and the final product barely works. On Mondays I would like to merge everything we made for the week so that it is a easier time than this week to get everything together. It took me a long time to understand how it worked and how not to destroy the project which I will now avoid for future implementations.
+
 
