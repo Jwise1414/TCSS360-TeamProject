@@ -112,7 +112,13 @@ public class MonitorDashboard {
         update.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK));
         menu.add(update);
         update.addActionListener(e -> {
-            final List<AnomalyRecord> found = myController.update();
+            final List<AnomalyRecord> found;
+            try {
+                found = myController.update();
+            } catch (final IllegalStateException ex) {
+                showDatabaseError(UPDATE_TITLE, ex);
+                return;
+            }
             JOptionPane.showMessageDialog(myFrame,
                     "Checked " + myController.getDroneCount() + " drones.\n"
                             + found.size() + " new anomalies found.",
@@ -163,7 +169,13 @@ public class MonitorDashboard {
             if (choice == null) {
                 return; // user cancelled
             }
-            final List<AnomalyRecord> results = myController.searchByType(choice);
+            final List<AnomalyRecord> results;
+            try {
+                results = myController.searchByType(choice);
+            } catch (final IllegalStateException ex) {
+                showDatabaseError(SEARCH_TYPE_TITLE, ex);
+                return;
+            }
             if (results.isEmpty()) {
                 JOptionPane.showMessageDialog(myFrame, "No " + choice + " anomalies recorded.",
                         SEARCH_TYPE_TITLE, JOptionPane.INFORMATION_MESSAGE);
@@ -283,6 +295,17 @@ public class MonitorDashboard {
         }
         showScrollingMessage("Drone ID: " + theID + "  Anomaly Count: " + count, text.toString(),
                 JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // shows a database error (the repository throws IllegalStateException when SQLite fails)
+    private void showDatabaseError(final String theTitle, final IllegalStateException theError) {
+        if (theTitle == null || theError == null) {
+            throw new IllegalArgumentException("Title and error cannot be null.");
+        }
+        final String cause = theError.getCause() == null
+                ? "" : "\n" + theError.getCause().getMessage();
+        JOptionPane.showMessageDialog(myFrame, "Database error: " + theError.getMessage() + cause,
+                theTitle, JOptionPane.ERROR_MESSAGE);
     }
 
     // formats anomaly records one per line for the log and search dialogs
