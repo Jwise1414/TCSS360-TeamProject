@@ -1,3 +1,4 @@
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -48,5 +49,18 @@ public class AnomalyService {
      */
     public List<AnomalyRecord> getByType(final AnomalyType theType) {
         return myRepository.getByType(Objects.requireNonNull(theType).name());
+    }
+
+    /**
+     * TCS-28: Returns saved anomalies between two times (both included), newest first.
+     * The search runs in the database instead of loading every anomaly.
+     *
+     * @param theStart the earliest time to include, not null
+     * @param theEnd the latest time to include, not null
+     * @return matching anomaly records (empty list if none)
+     * @throws IllegalArgumentException if a time is null or theStart is after theEnd
+     */
+    public List<AnomalyRecord> getByDateRange(final Instant theStart, final Instant theEnd) {
+        return myRepository.getByDateRange(theStart, theEnd);
     }
 }
