@@ -1,4 +1,3 @@
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,57 +7,71 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles saving anomaly records and getting them back from the database.
+ * Handles saving anomaly records and retrieving them from the database.
+ * This repository acts as the connection between the application's
+ * anomaly records and the database where those records are stored.
  */
 public class AnomalyRepository {
 
-    // We use DatabaseManager whenever we need to connect to the database.
-    private final DatabaseManager databaseManager;
+    // Stores the DatabaseManager used to establish database connections.
+    // Keeping this field private prevents other classes from directly
+    // changing the database manager used by this repository.
+    private final DatabaseManager myDatabaseManager;
 
-    public AnomalyRepository(DatabaseManager theDatabaseManager) {
+    public AnomalyRepository(final DatabaseManager theDatabaseManager) {
+
+        // A valid DatabaseManager is required because every database
+        // operation in this class depends on it to establish a connection.
         if (theDatabaseManager == null) {
             throw new IllegalArgumentException(
                     "DatabaseManager cannot be null."
             );
         }
 
-        databaseManager = theDatabaseManager;
+        myDatabaseManager = theDatabaseManager;
     }
 
     /**
      * Saves one anomaly record into the database.
      */
-    public void save(AnomalyRecord theRecord) {
+    public void save(final AnomalyRecord theRecord) {
 
+        // Prevent saving a null record because there would be no
+        // anomaly information available to insert into the database.
         if (theRecord == null) {
             throw new IllegalArgumentException(
                     "Anomaly record cannot be null."
             );
         }
 
-        // The question marks are placeholders for the values we want to save.
-        // This helps keep the SQL query safe and prevents SQL injection.
+        // The question marks are parameter placeholders.
+        // Using PreparedStatement keeps the data separate from the SQL
+        // command, helping prevent SQL injection attacks.
         String sql = "INSERT INTO anomaly_records "
                 + "(drone_id, timestamp, type, details) "
                 + "VALUES (?, ?, ?, ?)";
 
-        try (Connection connection = databaseManager.getConnection();
+        try (Connection connection = myDatabaseManager.getConnection();
              PreparedStatement statement =
                      connection.prepareStatement(sql)) {
 
-            // Fill in each placeholder with information from the anomaly.
+            // Assign each anomaly property to its corresponding SQL
+            // placeholder. The parameter positions start at 1.
             statement.setInt(1, theRecord.getDroneID());
             statement.setString(2, theRecord.getTimestamp().toString());
             statement.setString(3, theRecord.getType());
             statement.setString(4, theRecord.getDetails());
 
-            // Actually save the new record.
+            // Execute the INSERT statement to save the anomaly record
+            // permanently in the database.
             statement.executeUpdate();
 
-        } catch (SQLException e) {
-            // Let the calling class know if saving failed.
+        } catch (SQLException theException) {
+
+            // Convert the database exception into an unchecked exception
+            // so the calling class is informed that saving failed.
             throw new IllegalStateException(
-                    "Error saving anomaly record.", e
+                    "Error saving anomaly record.", theException
             );
         }
     }
@@ -70,23 +83,28 @@ public class AnomalyRepository {
 
         List<AnomalyRecord> records = new ArrayList<>();
 
-        // Sort by timestamp so the most recent anomalies appear first.
+        // Retrieve all stored anomaly records and sort them by timestamp.
+        // DESC places the most recent records at the beginning of the results.
         String sql = "SELECT id, drone_id, timestamp, type, details "
                 + "FROM anomaly_records ORDER BY timestamp DESC";
 
-        try (Connection connection = databaseManager.getConnection();
+        try (Connection connection = myDatabaseManager.getConnection();
              PreparedStatement statement =
                      connection.prepareStatement(sql);
              ResultSet results = statement.executeQuery()) {
 
-            // Go through the results and turn each database row into an object.
+            // Iterate through every row returned by the database.
+            // Each row is converted into an AnomalyRecord object before
+            // being added to the list that will be returned to the caller.
             while (results.next()) {
                 records.add(createRecord(results));
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException theException) {
+
+            // Report database errors that occur while retrieving records.
             throw new IllegalStateException(
-                    "Error retrieving anomaly records.", e
+                    "Error retrieving anomaly records.", theException
             );
         }
 
@@ -96,33 +114,37 @@ public class AnomalyRepository {
     /**
      * Gets all anomaly records for one specific drone.
      */
-    public List<AnomalyRecord> getByDroneID(int theDroneID) {
+    public List<AnomalyRecord> getByDroneID(final int theDroneID) {
 
         List<AnomalyRecord> records = new ArrayList<>();
 
-        // Only return records that match the drone ID we provide.
+        // The WHERE clause filters the results so only records belonging
+        // to the requested drone are returned. The timestamp ordering
+        // ensures the newest matching records appear first.
         String sql = "SELECT id, drone_id, timestamp, type, details "
                 + "FROM anomaly_records "
                 + "WHERE drone_id = ? ORDER BY timestamp DESC";
 
-        try (Connection connection = databaseManager.getConnection();
+        try (Connection connection = myDatabaseManager.getConnection();
              PreparedStatement statement =
                      connection.prepareStatement(sql)) {
 
-            // Set the drone ID in the query.
+            // Assign the requested drone ID to the query placeholder.
             statement.setInt(1, theDroneID);
 
             try (ResultSet results = statement.executeQuery()) {
 
-                // Add each matching database row to our list.
+                // Process each matching database row and convert it into
+                // an AnomalyRecord before adding it to the results list.
                 while (results.next()) {
                     records.add(createRecord(results));
                 }
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException theException) {
+
             throw new IllegalStateException(
-                    "Error retrieving anomaly records.", e
+                    "Error retrieving anomaly records.", theException
             );
         }
 
@@ -132,8 +154,10 @@ public class AnomalyRepository {
     /**
      * Gets all anomaly records that match a specific anomaly type.
      */
-    public List<AnomalyRecord> getByType(String theType) {
+    public List<AnomalyRecord> getByType(final String theType) {
 
+        // Reject null or blank anomaly types because they cannot provide
+        // a meaningful filter for the database query.
         if (theType == null || theType.isBlank()) {
             throw new IllegalArgumentException(
                     "Anomaly type cannot be empty."
@@ -142,28 +166,33 @@ public class AnomalyRepository {
 
         List<AnomalyRecord> records = new ArrayList<>();
 
-        // Only return records with the anomaly type we are looking for.
+        // Filter the database results by anomaly type.
+        // Only records whose type matches the supplied value are returned.
+        // Results are sorted with the newest anomalies appearing first.
         String sql = "SELECT id, drone_id, timestamp, type, details "
                 + "FROM anomaly_records "
                 + "WHERE type = ? ORDER BY timestamp DESC";
 
-        try (Connection connection = databaseManager.getConnection();
+        try (Connection connection = myDatabaseManager.getConnection();
              PreparedStatement statement =
                      connection.prepareStatement(sql)) {
 
+            // Assign the requested anomaly type to the SQL placeholder.
             statement.setString(1, theType);
 
             try (ResultSet results = statement.executeQuery()) {
 
-                // Convert each matching row into an AnomalyRecord.
+                // Convert every matching database row into an object
+                // and add it to the list of matching anomaly records.
                 while (results.next()) {
                     records.add(createRecord(results));
                 }
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException theException) {
+
             throw new IllegalStateException(
-                    "Error retrieving anomaly records.", e
+                    "Error retrieving anomaly records.", theException
             );
         }
 
@@ -172,18 +201,21 @@ public class AnomalyRepository {
 
     /**
      * Gets anomaly records between two timestamps.
-     * The start and end times are both included in the search.
+     * Both the start and end timestamps are included in the search.
      */
     public List<AnomalyRecord> getByDateRange(
-            Instant theStart,
-            Instant theEnd) {
+            final Instant theStart,
+            final Instant theEnd) {
 
+        // Both timestamps are required to define a valid date range.
         if (theStart == null || theEnd == null) {
             throw new IllegalArgumentException(
                     "Start and end dates cannot be null."
             );
         }
 
+        // A date range must begin before or at the same time as it ends.
+        // Rejecting an invalid range prevents an unintended database search.
         if (theStart.isAfter(theEnd)) {
             throw new IllegalArgumentException(
                     "Start date cannot be after end date."
@@ -192,31 +224,36 @@ public class AnomalyRepository {
 
         List<AnomalyRecord> records = new ArrayList<>();
 
-        // BETWEEN includes records that fall exactly on either endpoint.
+        // BETWEEN retrieves records whose timestamps fall within the
+        // supplied range, including records exactly equal to either endpoint.
+        // DESC ensures the newest matching records appear first.
         String sql = "SELECT id, drone_id, timestamp, type, details "
                 + "FROM anomaly_records "
                 + "WHERE timestamp BETWEEN ? AND ? "
                 + "ORDER BY timestamp DESC";
 
-        try (Connection connection = databaseManager.getConnection();
+        try (Connection connection = myDatabaseManager.getConnection();
              PreparedStatement statement =
                      connection.prepareStatement(sql)) {
 
-            // Convert the timestamps to strings before searching the database.
+            // Convert both Instant values into strings so they can be
+            // compared against the timestamp values stored in the database.
             statement.setString(1, theStart.toString());
             statement.setString(2, theEnd.toString());
 
             try (ResultSet results = statement.executeQuery()) {
 
-                // Add every record that falls within the date range.
+                // Iterate through the matching rows and convert each one
+                // into an AnomalyRecord before adding it to the results list.
                 while (results.next()) {
                     records.add(createRecord(results));
                 }
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException theException) {
+
             throw new IllegalStateException(
-                    "Error retrieving anomaly records.", e
+                    "Error retrieving anomaly records.", theException
             );
         }
 
@@ -224,13 +261,19 @@ public class AnomalyRepository {
     }
 
     /**
-     * Turns one row from the database into an AnomalyRecord object.
+     * Converts one database result row into an AnomalyRecord object.
+     *
+     * @param theResults the result set positioned at the current database row
+     * @return an AnomalyRecord containing the values from that row
+     * @throws SQLException if a database value cannot be retrieved
      */
-    private AnomalyRecord createRecord(ResultSet theResults)
+    private AnomalyRecord createRecord(final ResultSet theResults)
             throws SQLException {
 
-        // Read the values from the current database row and use them
-        // to create an object that the rest of our program can work with.
+        // Read each column from the current database row and pass its value
+        // into the AnomalyRecord constructor. This keeps database retrieval
+        // separate from object creation and avoids repeating conversion logic
+        // throughout the repository's retrieval methods.
         return new AnomalyRecord(
                 theResults.getInt("id"),
                 theResults.getInt("drone_id"),

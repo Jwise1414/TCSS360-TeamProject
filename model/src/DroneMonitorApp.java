@@ -8,21 +8,20 @@ public class DroneMonitorApp {
     // These are the main parts of the application.
     private final MonitorController myController;
     private final MonitorDashboard myDashboard;
+    private final DatabaseManager myDatabaseManager;
 
-    /**
-     * Sets up the main application using the dashboard and controller.
-     */
+    // Keep the query controller running while the app is open.
+    private AnomalyQueryController myQueryController;
+
     public DroneMonitorApp(
             MonitorDashboard theDashboard,
             MonitorController theController) {
 
         myDashboard = theDashboard;
         myController = theController;
+        myDatabaseManager = new DatabaseManager();
     }
 
-    /**
-     * This is where the program starts running.
-     */
     public static void main(String[] args) {
 
         // Set up the database before starting the rest of the application.
@@ -31,7 +30,6 @@ public class DroneMonitorApp {
         try {
             databaseManager.initializeDatabase();
         } catch (IllegalStateException e) {
-            // Stop startup if the database could not be initialized.
             System.err.println("Could not start the application: "
                     + e.getMessage());
             return;
@@ -46,20 +44,24 @@ public class DroneMonitorApp {
         theApp.buildComponents();
     }
 
-    /**
-     * Prepares the database for the application.
-     */
     public void initDatabase() {
-        DatabaseManager databaseManager = new DatabaseManager();
-        databaseManager.initializeDatabase();
+        myDatabaseManager.initializeDatabase();
     }
 
-    /**
-     * Sets up the parts of the application.
-     * More setup will go here as the dashboard and controller are connected.
-     */
     public void buildComponents() {
-        // TODO: Connect the dashboard and controller once their setup methods
-        // are confirmed.
+
+        // Connect the query feature to the database.
+        AnomalyRepository repository =
+                new AnomalyRepository(myDatabaseManager);
+
+        // Create the anomaly history screen and its controller.
+        AnomalyQueryView queryView = new AnomalyQueryView();
+
+        myQueryController = new AnomalyQueryController(
+                queryView,
+                repository
+        );
+
+        // The query screen opens separately from the main dashboard.
     }
 }
