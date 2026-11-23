@@ -190,7 +190,8 @@ public class MonitorDashboard {
         query.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK));
         menu.add(query);
         query.addActionListener(e -> new AnomalyQueryView(myFrame,
-                new AnomalyQueryController(myController::getHistory)).show());
+                new AnomalyQueryController(myController::getHistory,
+                        myController::searchByDateRange)).show());
 
         //chooseCSVfile logic
         final JMenuItem csv = new JMenuItem("Open CSV...");
