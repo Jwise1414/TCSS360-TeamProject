@@ -185,6 +185,13 @@ public class MonitorDashboard {
                     formatRecords(results), JOptionPane.INFORMATION_MESSAGE);
         });
 
+        //anomaly query window logic (TCS-26)
+        final JMenuItem query = new JMenuItem("Anomaly Query...");
+        query.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK));
+        menu.add(query);
+        query.addActionListener(e -> new AnomalyQueryView(myFrame,
+                new AnomalyQueryController(myController::getHistory)).show());
+
         //chooseCSVfile logic
         final JMenuItem csv = new JMenuItem("Open CSV...");
         csv.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
