@@ -1,20 +1,10 @@
 # TCSS360-TeamProject
 Team Members - Jason Wise, Hamsa Farah, khalil
 
-Jason Wise Week 2: This sprint I was a little confused on the projects requirments for the week and I completed what I believe is what the assignment asked.
-Im a little rusty with some GUI components and had to make the GUI look better as well as make the buttons do what they were actually supposed to do and react accordingly.
-hopefully the second iteration is make to the liking, I feel it has a lot more code than our last iteration.
-
-Hamsa Farah Week 2: Same as Jason, I wasn't sure where to start, so I started with the DB setup. I researched SQLite integration with Java, worked on the initial database setup, and created the anomaly repository to handle storing and retrieving anomaly records. I also started working on how it would integrate
-with the existing application.
-
-Khalil Week 2: I fell behind this sprint and didn’t get my part done on time, so Jason and Hamsa carried most of the work. After the deadline I finished TCS-16 and TCS-17, connecting my anomaly detector to Hamsa’s database so detected anomalies get saved, and added tests for it. Next sprint I’m going to start early and stay in contact with the team throughout the week.
-
-Khalil Week 3: I completed TCS-18 Search By Type. I merged Jason's GUI branch into my branch and resolved the conflicts, then added search by type to the service, controller and dashboard menu with a type picker, plus 3 new JUnit tests (8 passing). While testing I found the SQLite JDBC driver was missing from the project and added it so the database now initializes correctly.
-
-Jason Wise Week 3: this sprint went well, after making the help view I realized how inefficient my monitordashboard was and how I could make it easier to read and better to maintain
-For the help view I went more based off the UML which make the class look a lot cleaner and super easy to understand which I will now use this type of format when working with GUI in the future The filter gave me trouble as I havnt done anything like that before but I was able to figure it out.
-
 Jason Wise  Week 4: this week has made me regret a lot. From now on I will NOT WAIT UNTIL 4 INTERATIONS TO MERGE ALL OUR CODE. It was an absolute mess and the final product barely works. On Mondays I would like to merge everything we made for the week so that it is a easier time than this week to get everything together. It took me a long time to understand how it worked and how not to destroy the project which I will now avoid for future implementations.
 
+Hamsa Farah Week 4: I took time this week on really understanding our SQLite portion of the project. I relized the importance of clean and clear code 
+and coding conventions. I'm not looking forward to looking at 4 weeks of merged work.
+
+Khalil Week 4:
 
