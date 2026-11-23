@@ -87,6 +87,16 @@ public class MonitorController {
     }
 
     /**
+     * TCS-26: every anomaly saved in the database, newest first.
+     *
+     * @return the saved anomaly history
+     * @throws IllegalStateException if the database cannot be read
+     */
+    public List<AnomalyRecord> getHistory() {
+        return myService.getHistory();
+    }
+
+    /**
      * Conditions that are happening right now.
      *
      * @return the active conditions
