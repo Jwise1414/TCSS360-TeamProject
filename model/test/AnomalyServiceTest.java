@@ -2,6 +2,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,17 @@ class AnomalyServiceTest {
             final List<AnomalyRecord> result = new ArrayList<>();
             for (final AnomalyRecord r : mySaved) {
                 if (r.getType().equals(theType)) {
+                    result.add(r);
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public List<AnomalyRecord> getByDateRange(final Instant theStart, final Instant theEnd) {
+            final List<AnomalyRecord> result = new ArrayList<>();
+            for (final AnomalyRecord r : mySaved) {
+                if (!r.getTimestamp().isBefore(theStart) && !r.getTimestamp().isAfter(theEnd)) {
                     result.add(r);
                 }
             }
@@ -123,5 +135,15 @@ class AnomalyServiceTest {
     @Test
     void searchByNullTypeThrows() {
         assertThrows(NullPointerException.class, () -> myService.getByType(null));
+    }
+
+    @Test
+    void searchByDateRangeReturnsOnlyAnomaliesInRange() {
+        myService.processUpdate(List.of(drone(47.6, -122.3, 100, 10, 90)));
+        final Instant now = Instant.now();
+        assertEquals(1, myService.getByDateRange(now.minusSeconds(60), now.plusSeconds(60))
+                .size());
+        assertTrue(myService.getByDateRange(now.minusSeconds(7200), now.minusSeconds(3600))
+                .isEmpty());
     }
 }

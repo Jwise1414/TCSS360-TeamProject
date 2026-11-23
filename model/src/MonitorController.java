@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -94,6 +95,20 @@ public class MonitorController {
      */
     public List<AnomalyRecord> getHistory() {
         return myService.getHistory();
+    }
+
+    /**
+     * TCS-28: saved anomalies between two times (both included), newest first.
+     * The date search runs in the database.
+     *
+     * @param theStart the earliest time to include, not null
+     * @param theEnd the latest time to include, not null
+     * @return matching saved anomalies
+     * @throws IllegalArgumentException if a time is null or theStart is after theEnd
+     * @throws IllegalStateException if the database cannot be read
+     */
+    public List<AnomalyRecord> searchByDateRange(final Instant theStart, final Instant theEnd) {
+        return myService.getByDateRange(theStart, theEnd);
     }
 
     /**
