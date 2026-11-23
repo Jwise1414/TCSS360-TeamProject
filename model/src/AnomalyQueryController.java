@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
- * TCS-26: Runs combined searches over saved anomalies for the Anomaly Query window.
- * Any filter can be left empty (null) to mean "match everything".
+ * TCS-26 / TCS-28: Runs combined searches over saved anomalies for the Anomaly Query window.
+ * Any filter can be left empty (null) to mean "match everything". Date searches
+ * run in the database when a range source is given (TCS-28).
  *
  * @author Khalil Ahmednoor
  */
@@ -18,29 +20,64 @@ public class AnomalyQueryController {
     /** Smallest allowed drone ID. */
     private static final int MIN_DRONE_ID = 0;
 
+    /** Latest time used when a search has a From date but no To date. */
+    private static final String LATEST_TIME = "9999-12-31T23:59:59Z";
+
     private final Supplier<List<AnomalyRecord>> mySource;
+    private final BiFunction<Instant, Instant, List<AnomalyRecord>> myRangeSource;
     private final ZoneId myZone;
 
     /**
-     * Creates a query controller that searches the given anomaly history.
+     * Creates a query controller. When a date is given, the search asks
+     * theRangeSource for just that time range so the database does the work.
      *
      * @param theSource supplies every saved anomaly, not null
+     * @param theRangeSource finds saved anomalies between two times (both included),
+     *                       or null to filter dates in memory instead
      * @param theZone the time zone used to turn dates into start/end of day, not null
-     * @throws NullPointerException if an argument is null
+     * @throws NullPointerException if theSource or theZone is null
      */
     public AnomalyQueryController(final Supplier<List<AnomalyRecord>> theSource,
+                                  final BiFunction<Instant, Instant, List<AnomalyRecord>>
+                                          theRangeSource,
                                   final ZoneId theZone) {
         mySource = Objects.requireNonNull(theSource, "Source cannot be null.");
+        myRangeSource = theRangeSource;
         myZone = Objects.requireNonNull(theZone, "Zone cannot be null.");
     }
 
     /**
-     * Creates a query controller that uses the system time zone.
+     * Creates a query controller that uses the database for date searches
+     * and the system time zone.
+     *
+     * @param theSource supplies every saved anomaly, not null
+     * @param theRangeSource finds saved anomalies between two times, not null
+     */
+    public AnomalyQueryController(final Supplier<List<AnomalyRecord>> theSource,
+                                  final BiFunction<Instant, Instant, List<AnomalyRecord>>
+                                          theRangeSource) {
+        this(theSource, Objects.requireNonNull(theRangeSource, "Range source cannot be null."),
+                ZoneId.systemDefault());
+    }
+
+    /**
+     * Creates a query controller that filters dates in memory.
+     *
+     * @param theSource supplies every saved anomaly, not null
+     * @param theZone the time zone used to turn dates into start/end of day, not null
+     */
+    public AnomalyQueryController(final Supplier<List<AnomalyRecord>> theSource,
+                                  final ZoneId theZone) {
+        this(theSource, null, theZone);
+    }
+
+    /**
+     * Creates a query controller that filters dates in memory and uses the system time zone.
      *
      * @param theSource supplies every saved anomaly, not null
      */
     public AnomalyQueryController(final Supplier<List<AnomalyRecord>> theSource) {
-        this(theSource, ZoneId.systemDefault());
+        this(theSource, null, ZoneId.systemDefault());
     }
 
     /**
@@ -66,7 +103,7 @@ public class AnomalyQueryController {
                 theTo == null ? null : theTo.plusDays(1).atStartOfDay(myZone).toInstant();
 
         final List<AnomalyRecord> results = new ArrayList<>();
-        for (final AnomalyRecord r : mySource.get()) {
+        for (final AnomalyRecord r : loadCandidates(start, endExclusive)) {
             if (theType != null && !r.getType().equals(theType.name())) {
                 continue;
             }
@@ -83,6 +120,21 @@ public class AnomalyQueryController {
         }
         results.sort(Comparator.comparing(AnomalyRecord::getTimestamp).reversed());
         return results;
+    }
+
+    // TCS-28: when a date is given and a range source exists, only load that range from
+    // the database. Timestamps are stored as text, so the range is padded by a second on
+    // each side and search() trims it to the exact range. An open-ended side uses the
+    // earliest/latest possible time.
+    private List<AnomalyRecord> loadCandidates(final Instant theStart,
+                                               final Instant theEndExclusive) {
+        if (myRangeSource == null || (theStart == null && theEndExclusive == null)) {
+            return mySource.get();
+        }
+        final Instant from = theStart == null ? Instant.EPOCH : theStart.minusSeconds(1);
+        final Instant to = theEndExclusive == null
+                ? Instant.parse(LATEST_TIME) : theEndExclusive.plusSeconds(1);
+        return myRangeSource.apply(from, to);
     }
 
     /**
