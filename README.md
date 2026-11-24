@@ -5,5 +5,5 @@ Jason Wise  Week 4: this week has made me regret a lot. From now on I will NOT W
 
 Hamsa Farah Week 4: I took time this week on really understanding our SQLite portion of the project and begin to test it. I didnt have any major issues but I realized the importance of clean and clear code and coding conventions. 
 
-Khalil Week 4:This week was overwhelming and I fell behind. I built the anomaly query window to search anomalies by type, drone ID and date. The query classes were empty placeholders so I had to build them from scratch. Next time I'll keep up with the merges every week.
+Khalil Ahmednoor Week 4:This week was overwhelming and I fell behind. I built the anomaly query window to search anomalies by type, drone ID and date. The query classes were empty placeholders so I had to build them from scratch. Next time I'll keep up with the merges every week.
 
